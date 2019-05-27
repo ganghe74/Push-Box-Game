@@ -32,7 +32,6 @@ public:
 		setType('w');
 		setColor('B'); // °ËÀº»ö
 		setMove(false);
-		setType('w');
 	}
 };
 
