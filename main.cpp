@@ -28,7 +28,7 @@ public:
 		{4, 4, 1, 1, 2, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 0, 2, 0, 0, 1, 4},
 		{4, 4, 4, 1, 0, 0, 0, 0, 1, 4},
-		{1, 4, 4, 4, 0, 0, 1, 1, 1, 4},
+		{4, 4, 4, 1, 0, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 1, 1, 1, 4, 4, 4},
 	},
 	{
@@ -165,7 +165,7 @@ class map {
 	element board[11][11]; // ??????
 	items itemList;
 	int step, push, currlevel;
-	int ** target; // ?ڽ??? ???ƾ? ?? ��ġ
+	int **target;
 	char preMove;
 	/* ???? ???? ?????? ????*/
 
@@ -178,10 +178,11 @@ public:
 	int getCurrLevel() { return currlevel; }
 	int getStep() { return step; }
 	int getPush() { return push; }
+	int (*getTarget)[2] { return target; }
 	character getUser() { return user; }
 	element(*getBoard())[11]{ return board; } // ?????? ????
 
-		void start(int level = 0) {   // ?ϳ??? ??�� ????.
+	void start(int level = 0) {   // ?ϳ??? ??�� ????.
 		currlevel = level;
 		target[level] = new int[12]; /* ?ڽ??? ??�� ?ڸ? ???? */
 		target[level][0] = 0; int n = 1;
@@ -399,26 +400,35 @@ public:
 
 int main() {
 	pushBox p = pushBox();
+	int ** target = p.getMap().target;
+	
 
 	initscr();	
 	curs_set(0); // 커서 사라짐
 	noecho(); // 문자 출력금지
 
 	start_color();
-	init_pair(1, COLOR_BLUE, COLOR_YELLOW);
-	init_pair(2, COLOR_WHITE, COLOR_WHITE);
+	init_pair(1, COLOR_BLUE, COLOR_BLACK);
+	init_pair(2, COLOR_RED, COLOR_RED);
+	init_pair(3, COLOR_BLACK, COLOR_BLACK);
+	init_pair(4, COLOR_WHITE, COLOR_WHITE);
+	init_pair(5, COLOR_YELLOW, COLOR_YELLOW);
 
 	char x;
 	while (true) {
 		clear();
-		attron(COLOR_PAIR(1));
 		for (int i=0;i<10;++i) {
 			for (int j=0;j<10;++j) {
+				char type = p.getMap().getBoard()[i][j].type;
+				if (type == 'n') attron(COLOR_PAIR(3));
+				else if (type == 'w') attron(COLOR_PAIR(4));
+				else if (type == 'b') attron(COLOR_PAIR(5));
+				else attron(COLOR_PAIR(1));
 				addch(p.getMap().getBoard()[i][j].type);
 			}
 			addch('\n');
 		}
-		attroff(COLOR_PAIR(1));
+		int (*target)[2] = p.getMap().getTarget();
 		attron(COLOR_PAIR(2));
 		mvprintw(p.getL().first, p.getL().second, "C");
 		attroff(COLOR_PAIR(2));
