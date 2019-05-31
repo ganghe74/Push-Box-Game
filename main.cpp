@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <ncurses.h>
 using namespace std;
@@ -23,8 +23,8 @@ public:
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
 		{4, 4, 1, 1, 1, 1, 4, 4, 4, 4},
 		{4, 4, 1, 3, 0, 1, 1, 4, 4, 4},
+		{4, 4, 1, 3, 2, 0, 1, 4, 4, 4},
 		{4, 4, 1, 3, 0, 0, 1, 4, 4, 4},
-		{4, 4, 1, 3, 0, 2, 1, 4, 4, 4},
 		{4, 4, 1, 1, 2, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 0, 2, 0, 0, 1, 4},
 		{4, 4, 4, 1, 0, 0, 0, 0, 1, 4},
@@ -69,14 +69,6 @@ public:
 	}
 	};
 
-	int target[5][5][2] = {
-	{{5, 3}, {5, 4}, {5, 5}},
-	{{2, 3}, {3, 3}, {4, 3}},
-	{{5, 2}, {6, 3}, {7, 2}},
-	{{4, 4}, {4, 6}, {5, 5}, {6, 4}, {6, 6}},
-	{{6, 1}, {6, 3}, {8, 3}}
-	};
-
 	int characterList[11][2] = {
 		{8, 4}, {3, 4}, {6, 7}, {8, 5}
 	};
@@ -89,30 +81,16 @@ public:
 		if (level >= 5) return NULL;
 		return characterList[level];
 	};
-
-	int(*returnTarget(int level))[2] {
-		return target[level];
-	}
 };
 
 class element {
-public:
-	char color;
-	char shape;
-	bool move;
 	char type;
-
-	char getColor() { return color; }
-	char getShape() { return shape; }
-	bool getMove() { return move; }
-	char getType() { return type; }
-	void setColor(char c) { color = c; }
-	void setShape(char s) { shape = s; }
-	void setMove(bool m) { move = m; }
+public:
+	char getType() const { return type; }
 	void setType(char t) { type = t; }
 };
 
-class nothing : public element { // ?ƹ??͵? ???? ?ȵǴ? ????
+class nothing : public element {
 public:
 	nothing() {
 		setType('n');
@@ -124,34 +102,29 @@ class wall : public element { // ??
 public:
 	wall() {
 		setType('w');
-		setColor('B'); // ??��??
-		setMove(false);
 	}
 };
 
-class Box : public element { // ????
+class Box : public element {
 public:
 	Box() {
 		setType('b');
-		setColor('b'); // ????
-		setMove(true);
-		setType('b');
 	}
 };
 
-class emptySpace : public element { // ?? ????
+class emptySpace : public element {
 public:
 	emptySpace() {
 		setType('e');
 	}
 };
 
-class character { // ĳ????
+class character {
 	int r, c;
 
 public:
-	pair<int, int> getLocation() {
-		pair<int,int> p = make_pair(r, c);
+	pair<int, int> getLocation() const {
+		pair<int, int> p = make_pair(r, c);
 		return p;
 	}
 	void setLocation(int row, int col) {
@@ -161,30 +134,36 @@ public:
 };
 
 class map {
-	character user; // ĳ????
-	element board[11][11]; // ??????
+	character user;
+	element board[11][11];
 	items itemList;
 	int step, push, currlevel;
 	int **target;
 	char preMove;
-	/* ???? ???? ?????? ????*/
 
 public:
 	map() {
 		target = new int *[5];
+		for (int i = 0; i < 5; i++) target[i] = new int[12];
 		start(0);
 	}
 
-	int getCurrLevel() { return currlevel; }
-	int getStep() { return step; }
-	int getPush() { return push; }
-	int (*getTarget)[2] { return target; }
-	character getUser() { return user; }
-	element(*getBoard())[11]{ return board; } // ?????? ????
+	~map() {
+		for (int i = 0; i < 5; i++) {
+			delete[] target[i];
+		}
+		delete[] target;
+	}
 
-	void start(int level = 0) {   // ?ϳ??? ??�� ????.
+	int getCurrLevel() const { return currlevel; }
+	int getStep() const { return step; }
+	int getPush() const { return push; }
+	character getUser() const { return user; }
+	element(*getBoard())[11]{ return board; }
+	int * getTarget(int level) const { return target[level]; }
+
+	void start(int level = 0) {
 		currlevel = level;
-		target[level] = new int[12]; /* ?ڽ??? ??�� ?ڸ? ???? */
 		target[level][0] = 0; int n = 1;
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
@@ -202,21 +181,19 @@ public:
 				else board[i][j] = nothing();
 			}
 		}
-		int* rc = itemList.returnCharacter(0); // ĳ???? ��ġ
+		int* rc = itemList.returnCharacter(0);
 		user.setLocation(rc[0], rc[1]);
 	}
 
 	bool move(char order) {
 		pair<int, int> l;
-		l = user.getLocation(); // ��ġ
-		if (order == 'u') { // ��??
-			if (l.first == 0) return false; // ???
+		l = user.getLocation();
+		if (order == 'u' && l.first != 0) {
 			if (board[l.first - 1][l.second].getType() == 'e') {
 				user.setLocation(l.first - 1, l.second);
 				preMove = 'u';
 			}
-			else if (board[l.first - 1][l.second].getType() == 'b') {
-				if (l.first == 1) return false; // ???
+			else if (board[l.first - 1][l.second].getType() == 'b' && l.first > 1) {
 				if (board[l.first - 2][l.second].getType() == 'e') {
 					user.setLocation(l.first - 1, l.second);
 					board[l.first - 2][l.second] = Box();
@@ -227,7 +204,7 @@ public:
 			else return false;
 			return true;
 		}
-		else if (order == 'd') { // ?Ʒ?
+		else if (order == 'd') {
 			if (l.first == 9) return false;
 			if (board[l.first + 1][l.second].getType() == 'e') {
 				user.setLocation(l.first + 1, l.second);
@@ -291,10 +268,10 @@ public:
 		start(currlevel);
 	}
 
-	bool revert() { // ?ѹ? ?ǵ?????
+	bool revert() {
 		pair<int, int> p = user.getLocation();
-		if (preMove == 'u') {
-			if (p.first == 0) {} // ????
+		if (preMove == 'w') {
+			if (p.first == 0) {}
 			else if (board[p.first - 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
 				board[p.first - 1][p.second] = emptySpace();
@@ -302,10 +279,11 @@ public:
 			}
 			user.setLocation(p.first + 1, p.second);
 			step--;
+			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 'd') {
-			if (p.first == 9) {} // ????
+		else if (preMove == 's') {
+			if (p.first == 9) {}
 			else if (board[p.first + 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
 				board[p.first - 1][p.second] = emptySpace();
@@ -313,9 +291,10 @@ public:
 			}
 			user.setLocation(p.first - 1, p.second);
 			step--;
+			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 'l') {
+		else if (preMove == 'a') {
 			if (p.second == 0) {}
 			else if (board[p.first][p.second - 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -324,9 +303,10 @@ public:
 			}
 			user.setLocation(p.first, p.second + 1);
 			step--;
+			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 'r') {
+		else if (preMove == 'd') {
 			if (p.second == 9) {}
 			else if (board[p.first][p.second + 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -335,12 +315,13 @@ public:
 			}
 			user.setLocation(p.first, p.second - 1);
 			step--;
+			preMove = NULL;
 			return true;
 		}
 		return false;
 	}
 
-	bool check() { // ???????? Ȯ??
+	bool check() {
 		int * temp = target[currlevel];
 		int n = temp[0];
 		for (int i = 1; i < n * 2 + 1; i += 2) {
@@ -361,49 +342,34 @@ public:
 		Map.start();
 	}
 
-	void order(char order) { // move, revert
+	map getMap() const { return Map; }
+	pair<int, int> getL() const { return Map.getUser().getLocation(); }
+
+	void order(char order) {
 		if (order == 'R') Map.revert();
 		else {
-			if (Map.move(order)) { // ?̵?�� ?????ϰ? ?̵??ߴٸ?
-				if (Map.check()) { // ???????? Ȯ??
-					Map.start(Map.getCurrLevel() + 1); // ??�� ?ܰ??? ?̵?.
-				}
-				else {
-					// ?ƴ϶??? ?? ??????Ʈ ?Ͽ? ????
+			if (Map.move(order)) {
+				if (Map.check()) {
+					Map.start(Map.getCurrLevel() + 1);
 				}
 			}
 		}
 	}
 
-	map getMap() {
-		return Map;
-	}
-
-	pair<int, int> getL() { // ?׽?Ʈ??
-		return Map.getUser().getLocation();
-	}
-
-	void print(char ord) { // ?׽?Ʈ??
-		order(ord); // ????
-		pair<int, int> l = getL();
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
-				if (i == l.first && j == l.second) {
-					cout << 'M'; continue;
-				}
-				cout << (getMap().getBoard()[i][j]).type;
-			}
-			cout << endl;
+	bool checkTarget(int r, int c) {
+		int * arr = Map.getTarget(Map.getCurrLevel());
+		int n = arr[0];
+		for (int i = 1; i < n*2 + 1; i+=2) {
+			if (r == arr[i] && c == arr[i + 1]) return true;
 		}
+		return false;
 	}
 };
 
 int main() {
 	pushBox p = pushBox();
-	int ** target = p.getMap().target;
-	
 
-	initscr();	
+	initscr();
 	curs_set(0); // 커서 사라짐
 	noecho(); // 문자 출력금지
 
@@ -417,8 +383,8 @@ int main() {
 	char x;
 	while (true) {
 		clear();
-		for (int i=0;i<10;++i) {
-			for (int j=0;j<10;++j) {
+		for (int i = 0; i < 10; ++i) {
+			for (int j = 0; j < 10; ++j) {
 				char type = p.getMap().getBoard()[i][j].type;
 				if (type == 'n') attron(COLOR_PAIR(3));
 				else if (type == 'w') attron(COLOR_PAIR(4));
@@ -428,7 +394,7 @@ int main() {
 			}
 			addch('\n');
 		}
-		int (*target)[2] = p.getMap().getTarget();
+		int(*target)[2] = p.getMap().getTarget();
 		attron(COLOR_PAIR(2));
 		mvprintw(p.getL().first, p.getL().second, "C");
 		attroff(COLOR_PAIR(2));
