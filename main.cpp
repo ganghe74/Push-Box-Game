@@ -23,8 +23,8 @@ public:
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
 		{4, 4, 1, 1, 1, 1, 4, 4, 4, 4},
 		{4, 4, 1, 3, 0, 1, 1, 4, 4, 4},
-		{4, 4, 1, 3, 2, 0, 1, 4, 4, 4},
 		{4, 4, 1, 3, 0, 0, 1, 4, 4, 4},
+		{4, 4, 1, 3, 0, 2, 1, 4, 4, 4},
 		{4, 4, 1, 1, 2, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 0, 2, 0, 0, 1, 4},
 		{4, 4, 4, 1, 0, 0, 0, 0, 1, 4},
@@ -69,6 +69,14 @@ public:
 	}
 	};
 
+	int target[5][5][2] = {
+	{{5, 3}, {5, 4}, {5, 5}},
+	{{2, 3}, {3, 3}, {4, 3}},
+	{{5, 2}, {6, 3}, {7, 2}},
+	{{4, 4}, {4, 6}, {5, 5}, {6, 4}, {6, 6}},
+	{{6, 1}, {6, 3}, {8, 3}}
+	};
+
 	int characterList[11][2] = {
 		{8, 4}, {3, 4}, {6, 7}, {8, 5}
 	};
@@ -84,13 +92,23 @@ public:
 };
 
 class element {
-	char type;
 public:
-	char getType() const { return type; }
+	char color;
+	char shape;
+	bool move;
+	char type;
+
+	char getColor() { return color; }
+	char getShape() { return shape; }
+	bool getMove() { return move; }
+	char getType() { return type; }
+	void setColor(char c) { color = c; }
+	void setShape(char s) { shape = s; }
+	void setMove(bool m) { move = m; }
 	void setType(char t) { type = t; }
 };
 
-class nothing : public element {
+class nothing : public element { // ?ƹ??͵? ???? ?ȵǴ? ????
 public:
 	nothing() {
 		setType('n');
@@ -102,29 +120,34 @@ class wall : public element { // ??
 public:
 	wall() {
 		setType('w');
+		setColor('B'); // ??��??
+		setMove(false);
 	}
 };
 
-class Box : public element {
+class Box : public element { // ????
 public:
 	Box() {
+		setType('b');
+		setColor('b'); // ????
+		setMove(true);
 		setType('b');
 	}
 };
 
-class emptySpace : public element {
+class emptySpace : public element { // ?? ????
 public:
 	emptySpace() {
 		setType('e');
 	}
 };
 
-class character {
+class character { // ĳ????
 	int r, c;
 
 public:
-	pair<int, int> getLocation() const {
-		pair<int, int> p = make_pair(r, c);
+	pair<int, int> getLocation() {
+		pair<int,int> p = make_pair(r, c);
 		return p;
 	}
 	void setLocation(int row, int col) {
@@ -144,26 +167,18 @@ class map {
 public:
 	map() {
 		target = new int *[5];
-		for (int i = 0; i < 5; i++) target[i] = new int[12];
 		start(0);
 	}
 
-	~map() {
-		for (int i = 0; i < 5; i++) {
-			delete[] target[i];
-		}
-		delete[] target;
-	}
-
-	int getCurrLevel() const { return currlevel; }
-	int getStep() const { return step; }
-	int getPush() const { return push; }
-	character getUser() const { return user; }
+	int getCurrLevel() { return currlevel; }
+	int getStep() { return step; }
+	int getPush() { return push; }
+	character getUser() { return user; }
 	element(*getBoard())[11]{ return board; }
-	int * getTarget(int level) const { return target[level]; }
 
 	void start(int level = 0) {
 		currlevel = level;
+		target[level] = new int[12];
 		target[level][0] = 0; int n = 1;
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
@@ -188,12 +203,14 @@ public:
 	bool move(char order) {
 		pair<int, int> l;
 		l = user.getLocation();
-		if (order == 'u' && l.first != 0) {
+		if (order == 'u') {
+			if (l.first == 0) return false;
 			if (board[l.first - 1][l.second].getType() == 'e') {
 				user.setLocation(l.first - 1, l.second);
 				preMove = 'u';
 			}
-			else if (board[l.first - 1][l.second].getType() == 'b' && l.first > 1) {
+			else if (board[l.first - 1][l.second].getType() == 'b') {
+				if (l.first == 1) return false;
 				if (board[l.first - 2][l.second].getType() == 'e') {
 					user.setLocation(l.first - 1, l.second);
 					board[l.first - 2][l.second] = Box();
@@ -222,7 +239,7 @@ public:
 			else return false;
 			return true;
 		}
-		else if (order == 'l') { // ????
+		else if (order == 'l') {
 			if (l.second == 0) return false;
 			if (board[l.first][l.second - 1].getType() == 'e') {
 				user.setLocation(l.first, l.second - 1);
@@ -240,7 +257,7 @@ public:
 			else return false;
 			return true;
 		}
-		else if (order == 'r') { // ????
+		else if (order == 'r') {
 			if (l.second == 9) return false;
 			if (board[l.first][l.second + 1].getType() == 'e') {
 				user.setLocation(l.first, l.second + 1);
@@ -270,7 +287,7 @@ public:
 
 	bool revert() {
 		pair<int, int> p = user.getLocation();
-		if (preMove == 'w') {
+		if (preMove == 'u') {
 			if (p.first == 0) {}
 			else if (board[p.first - 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -279,11 +296,10 @@ public:
 			}
 			user.setLocation(p.first + 1, p.second);
 			step--;
-			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 's') {
-			if (p.first == 9) {}
+		else if (preMove == 'd') {
+			if (p.first == 9) {} // ????
 			else if (board[p.first + 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
 				board[p.first - 1][p.second] = emptySpace();
@@ -291,10 +307,9 @@ public:
 			}
 			user.setLocation(p.first - 1, p.second);
 			step--;
-			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 'a') {
+		else if (preMove == 'l') {
 			if (p.second == 0) {}
 			else if (board[p.first][p.second - 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -303,10 +318,9 @@ public:
 			}
 			user.setLocation(p.first, p.second + 1);
 			step--;
-			preMove = NULL;
 			return true;
 		}
-		else if (preMove == 'd') {
+		else if (preMove == 'r') {
 			if (p.second == 9) {}
 			else if (board[p.first][p.second + 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -315,13 +329,12 @@ public:
 			}
 			user.setLocation(p.first, p.second - 1);
 			step--;
-			preMove = NULL;
 			return true;
 		}
 		return false;
 	}
 
-	bool check() {
+	bool check() { // ???????? Ȯ??
 		int * temp = target[currlevel];
 		int n = temp[0];
 		for (int i = 1; i < n * 2 + 1; i += 2) {
@@ -342,69 +355,137 @@ public:
 		Map.start();
 	}
 
-	map getMap() const { return Map; }
-	pair<int, int> getL() const { return Map.getUser().getLocation(); }
-
-	void order(char order) {
+	void order(char order) { // move, revert
 		if (order == 'R') Map.revert();
 		else {
-			if (Map.move(order)) {
-				if (Map.check()) {
-					Map.start(Map.getCurrLevel() + 1);
+			if (Map.move(order)) { // ?̵?�� ?????ϰ? ?̵??ߴٸ?
+				if (Map.check()) { // ???????? Ȯ??
+					Map.start(Map.getCurrLevel() + 1); // ??�� ?ܰ??? ?̵?.
+				}
+				else {
+					// ?ƴ϶??? ?? ??????Ʈ ?Ͽ? ????
 				}
 			}
 		}
 	}
 
-	bool checkTarget(int r, int c) {
-		int * arr = Map.getTarget(Map.getCurrLevel());
-		int n = arr[0];
-		for (int i = 1; i < n*2 + 1; i+=2) {
-			if (r == arr[i] && c == arr[i + 1]) return true;
-		}
-		return false;
+	map getMap() {
+		return Map;
 	}
+
+	pair<int, int> getL() { // ?׽?Ʈ??
+		return Map.getUser().getLocation();
+	}
+
+	void print(char ord) { // ?׽?Ʈ??
+		order(ord); // ????
+		pair<int, int> l = getL();
+		for (int i = 0; i < 10; i++) {
+			for (int j = 0; j < 10; j++) {
+				if (i == l.first && j == l.second) {
+					cout << 'M'; continue;
+				}
+				cout << (getMap().getBoard()[i][j]).type;
+			}
+			cout << endl;
+		}
+	}
+};
+
+enum palette {DEFAULT, CHARACTER, BOX, WALL, EMPTY, NOTHING, TARGET};
+
+class UI {
+public:
+	UI() {
+		init();
+	}
+	~UI() {
+		delwin(win_game);
+		delwin(win_sub);
+		endwin();
+		cout << "Finished\n";
+		cout << "Score : ~~~\n";
+	}
+
+	void init() {
+		// Initialize ncurses
+		initscr();
+		curs_set(0);
+		noecho();
+
+		// Initialize colors  // init_pair(num, text color, bkgd color);
+		start_color();
+		init_pair(DEFAULT, COLOR_WHITE, COLOR_BLACK);
+		init_pair(CHARACTER, COLOR_WHITE, COLOR_RED);
+		init_pair(BOX, COLOR_WHITE, COLOR_YELLOW);
+		init_pair(WALL, COLOR_WHITE, COLOR_WHITE);
+		init_pair(EMPTY, COLOR_BLACK, COLOR_BLACK);
+		init_pair(NOTHING, COLOR_BLACK, COLOR_BLACK);
+		init_pair(TARGET, COLOR_WHITE, COLOR_GREEN);
+
+		// Initialize windows
+		resize_term(20, 30);
+		border('*', '*', '*', '*', '*', '*', '*', '*');
+		win_game = newwin(12, 12, 3, 3);
+		wborder(win_game, '@', '@', '@', '@', '@', '@', '@', '@');
+		win_sub = newwin(10,10, 3, 17);
+		wborder(win_sub, '@', '@', '@', '@', '@', '@', '@', '@');
+
+		// Text
+		mvprintw(1, 3, "Push Box Game!");
+		mvprintw(16, 3, "U    Q - quit");
+		mvprintw(17, 2, "LDR   R - reset(?)");
+		mvprintw(18, 2, "move");
+		mvwprintw(win_game, 1, 1, "win_game");
+		mvwprintw(win_sub, 1, 1, "win_sub\n Score~~~");
+		refresh();
+		wrefresh(win_game);
+		wrefresh(win_sub);
+	}
+
+	void update_scr() {
+		element (*board)[11] = game->getMap().getBoard();
+		for (int i=0;i<10;++i) {
+			for (int j=0;j<10;++j) {
+				char type = board[i][j].getType();
+				// if문 최적화예정
+				if (type == 'b') wattron(win_game, COLOR_PAIR(BOX));
+				else if (type == 'w') wattron(win_game, COLOR_PAIR(WALL));
+				else if (type == 'e') wattron(win_game, COLOR_PAIR(EMPTY));
+				else if (type == 'n') wattron(win_game, COLOR_PAIR(NOTHING));
+				else wattron(win_game, COLOR_PAIR(DEFAULT));
+				mvwprintw(win_game, i+1, j+1, "%c", type);
+			}
+		}
+		pair<int,int> player = game->getL();
+		wattron(win_game, COLOR_PAIR(CHARACTER));
+		mvwprintw(win_game, player.first+1, player.second+1, "C");
+		wrefresh(win_game);
+	}
+
+	// Game Start!
+	void start(pushBox *game) {
+		this->game = game;
+		while (true) {
+			update_scr();
+			char key = getch();
+			if (key == 'q') break;
+			game->order(key);
+		}
+		this->game = NULL;
+	}
+
+private:
+	pushBox *game;
+	WINDOW *win_game;
+	WINDOW *win_sub;
 };
 
 int main() {
 	pushBox p = pushBox();
 
-	initscr();
-	curs_set(0); // 커서 사라짐
-	noecho(); // 문자 출력금지
+	UI ui;
+	ui.start(&p);
 
-	start_color();
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
-	init_pair(2, COLOR_RED, COLOR_RED);
-	init_pair(3, COLOR_BLACK, COLOR_BLACK);
-	init_pair(4, COLOR_WHITE, COLOR_WHITE);
-	init_pair(5, COLOR_YELLOW, COLOR_YELLOW);
-
-	char x;
-	while (true) {
-		clear();
-		for (int i = 0; i < 10; ++i) {
-			for (int j = 0; j < 10; ++j) {
-				char type = p.getMap().getBoard()[i][j].type;
-				if (type == 'n') attron(COLOR_PAIR(3));
-				else if (type == 'w') attron(COLOR_PAIR(4));
-				else if (type == 'b') attron(COLOR_PAIR(5));
-				else attron(COLOR_PAIR(1));
-				addch(p.getMap().getBoard()[i][j].type);
-			}
-			addch('\n');
-		}
-		int(*target)[2] = p.getMap().getTarget();
-		attron(COLOR_PAIR(2));
-		mvprintw(p.getL().first, p.getL().second, "C");
-		attroff(COLOR_PAIR(2));
-		refresh();
-		x = getchar();
-		if (x == 'f') break;
-		p.order(x);
-	}
-
-	endwin();
-
-	cout << "Game Over\n";
+	return 0;
 }
