@@ -23,12 +23,12 @@ public:
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
 		{4, 4, 1, 1, 1, 1, 4, 4, 4, 4},
 		{4, 4, 1, 3, 0, 1, 1, 4, 4, 4},
+		{4, 4, 1, 3, 2, 0, 1, 4, 4, 4},
 		{4, 4, 1, 3, 0, 0, 1, 4, 4, 4},
-		{4, 4, 1, 3, 0, 2, 1, 4, 4, 4},
 		{4, 4, 1, 1, 2, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 0, 2, 0, 0, 1, 4},
 		{4, 4, 4, 1, 0, 0, 0, 0, 1, 4},
-		{4, 4, 4, 1, 0, 0, 1, 1, 1, 4},
+		{1, 4, 4, 4, 0, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 1, 1, 1, 4, 4, 4},
 	},
 	{
@@ -69,14 +69,6 @@ public:
 	}
 	};
 
-	int target[5][5][2] = {
-	{{5, 3}, {5, 4}, {5, 5}},
-	{{2, 3}, {3, 3}, {4, 3}},
-	{{5, 2}, {6, 3}, {7, 2}},
-	{{4, 4}, {4, 6}, {5, 5}, {6, 4}, {6, 6}},
-	{{6, 1}, {6, 3}, {8, 3}}
-	};
-
 	int characterList[11][2] = {
 		{8, 4}, {3, 4}, {6, 7}, {8, 5}
 	};
@@ -92,23 +84,13 @@ public:
 };
 
 class element {
-public:
-	char color;
-	char shape;
-	bool move;
 	char type;
-
-	char getColor() { return color; }
-	char getShape() { return shape; }
-	bool getMove() { return move; }
-	char getType() { return type; }
-	void setColor(char c) { color = c; }
-	void setShape(char s) { shape = s; }
-	void setMove(bool m) { move = m; }
+public:
+	char getType() const { return type; }
 	void setType(char t) { type = t; }
 };
 
-class nothing : public element { // ?ƹ??͵? ???? ?ȵǴ? ????
+class nothing : public element {
 public:
 	nothing() {
 		setType('n');
@@ -120,34 +102,29 @@ class wall : public element { // ??
 public:
 	wall() {
 		setType('w');
-		setColor('B'); // ??��??
-		setMove(false);
 	}
 };
 
-class Box : public element { // ????
+class Box : public element {
 public:
 	Box() {
 		setType('b');
-		setColor('b'); // ????
-		setMove(true);
-		setType('b');
 	}
 };
 
-class emptySpace : public element { // ?? ????
+class emptySpace : public element {
 public:
 	emptySpace() {
 		setType('e');
 	}
 };
 
-class character { // ĳ????
+class character {
 	int r, c;
 
 public:
-	pair<int, int> getLocation() {
-		pair<int,int> p = make_pair(r, c);
+	pair<int, int> getLocation() const {
+		pair<int, int> p = make_pair(r, c);
 		return p;
 	}
 	void setLocation(int row, int col) {
@@ -161,25 +138,23 @@ class map {
 	element board[11][11];
 	items itemList;
 	int step, push, currlevel;
-	int **target;
+	int target[13];
 	char preMove;
 
 public:
 	map() {
-		target = new int *[5];
 		start(0);
 	}
 
-	int getCurrLevel() { return currlevel; }
-	int getStep() { return step; }
-	int getPush() { return push; }
+	int getCurrLevel() const { return currlevel; }
+	int getStep() const { return step; }
+	int getPush() const { return push; }
 	character getUser() { return user; }
 	element(*getBoard())[11]{ return board; }
 
 	void start(int level = 0) {
 		currlevel = level;
-		target[level] = new int[12];
-		target[level][0] = 0; int n = 1;
+		target[0] = 0; int n = 1;
 		for (int i = 0; i < 10; i++) {
 			for (int j = 0; j < 10; j++) {
 				int temp = itemList.returnObj(level, i, j);
@@ -188,9 +163,9 @@ public:
 				else if (temp == 2) board[i][j] = Box();
 				else if (temp == 3) {
 					board[i][j] = emptySpace();
-					target[level][0]++;
-					target[level][n] = i;
-					target[level][n + 1] = j;
+					target[0]++;
+					target[n] = i;
+					target[n + 1] = j;
 					n += 2;
 				}
 				else board[i][j] = nothing();
@@ -198,16 +173,18 @@ public:
 		}
 		int* rc = itemList.returnCharacter(0);
 		user.setLocation(rc[0], rc[1]);
+		step = 0;
+		push = 0;
 	}
 
 	bool move(char order) {
 		pair<int, int> l;
 		l = user.getLocation();
-		if (order == 'u') {
+		if (order == 'w') {
 			if (l.first == 0) return false;
 			if (board[l.first - 1][l.second].getType() == 'e') {
 				user.setLocation(l.first - 1, l.second);
-				preMove = 'u';
+				preMove = 'w';
 			}
 			else if (board[l.first - 1][l.second].getType() == 'b') {
 				if (l.first == 1) return false;
@@ -215,17 +192,19 @@ public:
 					user.setLocation(l.first - 1, l.second);
 					board[l.first - 2][l.second] = Box();
 					board[l.first - 1][l.second] = emptySpace();
-					preMove = 'u';
+					preMove = 'w';
+					push++;
 				}
 			}
 			else return false;
+			step++;
 			return true;
 		}
-		else if (order == 'd') {
+		else if (order == 's') {
 			if (l.first == 9) return false;
 			if (board[l.first + 1][l.second].getType() == 'e') {
 				user.setLocation(l.first + 1, l.second);
-				preMove = 'd';
+				preMove = 's';
 			}
 			else if (board[l.first + 1][l.second].getType() == 'b') {
 				if (l.first + 1 == 9) return false;
@@ -233,17 +212,19 @@ public:
 					user.setLocation(l.first + 1, l.second);
 					board[l.first + 1][l.second] = emptySpace();
 					board[l.first + 2][l.second] = Box();
-					preMove = 'd';
+					preMove = 's';
+					push++;
 				}
 			}
 			else return false;
+			step++;
 			return true;
 		}
-		else if (order == 'l') {
+		else if (order == 'a') {
 			if (l.second == 0) return false;
 			if (board[l.first][l.second - 1].getType() == 'e') {
 				user.setLocation(l.first, l.second - 1);
-				preMove = 'l';
+				preMove = 'a';
 			}
 			else if (board[l.first][l.second - 1].getType() == 'b') {
 				if (l.second == 1) return false;
@@ -251,17 +232,19 @@ public:
 					user.setLocation(l.first, l.second - 1);
 					board[l.first][l.second - 2] = Box();
 					board[l.first][l.second - 1] = emptySpace();
-					preMove = 'l';
+					preMove = 'a';
+					push++;
 				}
 			}
 			else return false;
+			step++;
 			return true;
 		}
-		else if (order == 'r') {
+		else if (order == 'd') {
 			if (l.second == 9) return false;
 			if (board[l.first][l.second + 1].getType() == 'e') {
 				user.setLocation(l.first, l.second + 1);
-				preMove = 'r';
+				preMove = 'd';
 			}
 			else if (board[l.first][l.second + 1].getType() == 'b') {
 				if (l.second == 8) return false;
@@ -269,25 +252,24 @@ public:
 					user.setLocation(l.first, l.second + 1);
 					board[l.first][l.second + 2] = Box();
 					board[l.first][l.second + 1] = emptySpace();
-					preMove = 'r';
+					preMove = 'd';
+					push++;
 				}
 			}
 			else return false;
+			step++;
 			return true;
 		}
 		return false;
 	}
 
 	void reset() {
-		for (int i = 0; i < 5; i++) {
-			delete[] target[i];
-		}
 		start(currlevel);
 	}
 
 	bool revert() {
 		pair<int, int> p = user.getLocation();
-		if (preMove == 'u') {
+		if (preMove == 'w') {
 			if (p.first == 0) {}
 			else if (board[p.first - 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -296,10 +278,11 @@ public:
 			}
 			user.setLocation(p.first + 1, p.second);
 			step--;
+			preMove = ' ';
 			return true;
 		}
-		else if (preMove == 'd') {
-			if (p.first == 9) {} // ????
+		else if (preMove == 's') {
+			if (p.first == 9) {}
 			else if (board[p.first + 1][p.second].getType() == 'b') {
 				board[p.first][p.second] = Box();
 				board[p.first - 1][p.second] = emptySpace();
@@ -307,9 +290,10 @@ public:
 			}
 			user.setLocation(p.first - 1, p.second);
 			step--;
+			preMove = ' ';
 			return true;
 		}
-		else if (preMove == 'l') {
+		else if (preMove == 'a') {
 			if (p.second == 0) {}
 			else if (board[p.first][p.second - 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -318,9 +302,10 @@ public:
 			}
 			user.setLocation(p.first, p.second + 1);
 			step--;
+			preMove = ' ';
 			return true;
 		}
-		else if (preMove == 'r') {
+		else if (preMove == 'd') {
 			if (p.second == 9) {}
 			else if (board[p.first][p.second + 1].getType() == 'b') {
 				board[p.first][p.second] = Box();
@@ -329,20 +314,20 @@ public:
 			}
 			user.setLocation(p.first, p.second - 1);
 			step--;
+			preMove = ' ';
 			return true;
 		}
 		return false;
 	}
 
-	bool check() { // ???????? Ȯ??
-		int * temp = target[currlevel];
+	bool check() {
+		int * temp = target;
 		int n = temp[0];
 		for (int i = 1; i < n * 2 + 1; i += 2) {
 			if (board[temp[i]][temp[i + 1]].getType() != 'b') return false;
 		}
 		return true;
 	}
-
 };
 
 class pushBox {
@@ -355,15 +340,12 @@ public:
 		Map.start();
 	}
 
-	void order(char order) { // move, revert
+	void order(char order) {
 		if (order == 'R') Map.revert();
 		else {
-			if (Map.move(order)) { // ?̵?�� ?????ϰ? ?̵??ߴٸ?
-				if (Map.check()) { // ???????? Ȯ??
-					Map.start(Map.getCurrLevel() + 1); // ??�� ?ܰ??? ?̵?.
-				}
-				else {
-					// ?ƴ϶??? ?? ??????Ʈ ?Ͽ? ????
+			if (Map.move(order)) {
+				if (Map.check()) {
+					Map.start(Map.getCurrLevel() + 1);
 				}
 			}
 		}
@@ -373,26 +355,14 @@ public:
 		return Map;
 	}
 
-	pair<int, int> getL() { // ?׽?Ʈ??
+	pair<int, int> getL() {
 		return Map.getUser().getLocation();
 	}
 
-	void print(char ord) { // ?׽?Ʈ??
-		order(ord); // ????
-		pair<int, int> l = getL();
-		for (int i = 0; i < 10; i++) {
-			for (int j = 0; j < 10; j++) {
-				if (i == l.first && j == l.second) {
-					cout << 'M'; continue;
-				}
-				cout << (getMap().getBoard()[i][j]).type;
-			}
-			cout << endl;
-		}
-	}
 };
 
-enum palette {DEFAULT, CHARACTER, BOX, WALL, EMPTY, NOTHING, TARGET};
+
+enum palette { DEFAULT, CHARACTER, BOX, WALL, EMPTY, NOTHING, TARGET };
 
 class UI {
 public:
@@ -428,7 +398,7 @@ public:
 		border('*', '*', '*', '*', '*', '*', '*', '*');
 		win_game = newwin(12, 12, 3, 3);
 		wborder(win_game, '@', '@', '@', '@', '@', '@', '@', '@');
-		win_sub = newwin(10,10, 3, 17);
+		win_sub = newwin(10, 10, 3, 17);
 		wborder(win_sub, '@', '@', '@', '@', '@', '@', '@', '@');
 
 		// Text
@@ -444,9 +414,9 @@ public:
 	}
 
 	void update_scr() {
-		element (*board)[11] = game->getMap().getBoard();
-		for (int i=0;i<10;++i) {
-			for (int j=0;j<10;++j) {
+		element(*board)[11] = game->getMap().getBoard();
+		for (int i = 0; i < 10; ++i) {
+			for (int j = 0; j < 10; ++j) {
 				char type = board[i][j].getType();
 				// if문 최적화예정
 				if (type == 'b') wattron(win_game, COLOR_PAIR(BOX));
@@ -454,12 +424,12 @@ public:
 				else if (type == 'e') wattron(win_game, COLOR_PAIR(EMPTY));
 				else if (type == 'n') wattron(win_game, COLOR_PAIR(NOTHING));
 				else wattron(win_game, COLOR_PAIR(DEFAULT));
-				mvwprintw(win_game, i+1, j+1, "%c", type);
+				mvwprintw(win_game, i + 1, j + 1, "%c", type);
 			}
 		}
-		pair<int,int> player = game->getL();
+		pair<int, int> player = game->getL();
 		wattron(win_game, COLOR_PAIR(CHARACTER));
-		mvwprintw(win_game, player.first+1, player.second+1, "C");
+		mvwprintw(win_game, player.first + 1, player.second + 1, "C");
 		wrefresh(win_game);
 	}
 
