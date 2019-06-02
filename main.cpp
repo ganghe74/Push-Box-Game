@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <vector>
 #include <ncurses.h>
 using namespace std;
@@ -123,9 +123,9 @@ class character {
 	int r, c;
 
 public:
-	pair<int, int> getLocation() const {
-		pair<int, int> p = make_pair(r, c);
-		return p;
+	void getLocation(int l[]) {
+		l[0] = r;
+		l[1] = c;
 	}
 	void setLocation(int row, int col) {
 		r = row;
@@ -193,59 +193,60 @@ public:
 	}
 
 	bool move(char order) {
-		pair<int, int> l;
-		l = user.getLocation();
-		if (order == 'w' && l.first != 0) {
-			if (board[l.first - 1][l.second].getType() == 'e') preBoxMove = false;
-			else if (board[l.first - 1][l.second].getType() == 'b' && l.first != 1) {
-				if (board[l.first - 2][l.second].getType() == 'e') {
-					swap(board[l.first - 2][l.second], board[l.first - 1][l.second]);
+		int l[2];
+		user.getLocation(l);
+		int r = l[0], c = l[1];
+		if (order == 'w' && r != 0) {
+			if (board[r - 1][c].getType() == 'e') preBoxMove = false;
+			else if (board[r - 1][c].getType() == 'b' && r != 1) {
+				if (board[r - 2][c].getType() == 'e') {
+					swap(board[r - 2][c], board[r - 1][c]);
 					preBoxMove = true;
 					push++;
 				}
 				else return false;
 			}
 			else return false;
-			user.setLocation(l.first - 1, l.second);
+			user.setLocation(r - 1, c);
 		}
-		else if (order == 's' && l.first != 9) {
-			if (board[l.first + 1][l.second].getType() == 'e') preBoxMove = false;
-			else if (board[l.first + 1][l.second].getType() == 'b' && l.first !=  8) {
-				if (board[l.first + 2][l.second].getType() == 'e') {
-					swap(board[l.first + 1][l.second], board[l.first + 2][l.second]);
+		else if (order == 's' && r != 9) {
+			if (board[r + 1][c].getType() == 'e') preBoxMove = false;
+			else if (board[r + 1][c].getType() == 'b' && r !=  8) {
+				if (board[r + 2][c].getType() == 'e') {
+					swap(board[r + 1][c], board[r + 2][c]);
 					preBoxMove = true;
 					push++;
 				}
 				else return false;
 			}
 			else return false;
-			user.setLocation(l.first + 1, l.second);
+			user.setLocation(r + 1, c);
 		}
-		else if (order == 'a' && l.second != 0) {
-			if (board[l.first][l.second - 1].getType() == 'e') preBoxMove = false;
-			else if (board[l.first][l.second - 1].getType() == 'b' && l.second != 1) {
-				if (board[l.first][l.second - 2].getType() == 'e') {
-					swap(board[l.first][l.second - 2], board[l.first][l.second - 1]);
+		else if (order == 'a' && c != 0) {
+			if (board[r][c - 1].getType() == 'e') preBoxMove = false;
+			else if (board[r][c - 1].getType() == 'b' && c != 1) {
+				if (board[r][c - 2].getType() == 'e') {
+					swap(board[r][c - 2], board[r][c - 1]);
 					preBoxMove = true;
 					push++;
 				}
 				else return false;
 			}
 			else return false;
-			user.setLocation(l.first, l.second - 1);
+			user.setLocation(r, c - 1);
 		}
-		else if (order == 'd' && l.second != 9) {
-			if (board[l.first][l.second + 1].getType() == 'e') preBoxMove = false;
-			else if (board[l.first][l.second + 1].getType() == 'b' && l.second != 8) {
-				if (board[l.first][l.second + 2].getType() == 'e') {
-					swap(board[l.first][l.second + 2], board[l.first][l.second + 1]);
+		else if (order == 'd' && c != 9) {
+			if (board[r][c + 1].getType() == 'e') preBoxMove = false;
+			else if (board[r][c + 1].getType() == 'b' && c != 8) {
+				if (board[r][c + 2].getType() == 'e') {
+					swap(board[r][c + 2], board[r][c + 1]);
 					preBoxMove = true;
 					push++;
 				}
 				else return false;
 			}
 			else return false;
-			user.setLocation(l.first, l.second + 1);
+			user.setLocation(r, c + 1);
 		}
 		else return false;
 		preMove = order;
@@ -258,38 +259,40 @@ public:
 	}
 
 	bool revert() {
-		pair<int, int> p = user.getLocation();
+		int l[2];
+		user.getLocation(l);
+		int r = l[0], c = l[1];
 		if (preMove == 'w') {
-			if (preBoxMove && p.first != 0) {
-				board[p.first][p.second] = Box();
-				board[p.first - 1][p.second] = emptySpace();
+			if (preBoxMove && r != 0) {
+				board[r][c] = Box();
+				board[r - 1][c] = emptySpace();
 				push--;
 			}
-			user.setLocation(p.first + 1, p.second);
+			user.setLocation(r + 1, c);
 		}
 		else if (preMove == 's') {
-			if (preBoxMove && p.first != 9) {
-				board[p.first][p.second] = Box();
-				board[p.first + 1][p.second] = emptySpace();
+			if (preBoxMove && r != 9) {
+				board[r][c] = Box();
+				board[r + 1][c] = emptySpace();
 				push--;
 			}
-			user.setLocation(p.first - 1, p.second);
+			user.setLocation(r - 1, c);
 		}
 		else if (preMove == 'a') {
-			if (preBoxMove && p.second != 0) {
-				board[p.first][p.second] = Box();
-				board[p.first][p.second - 1] = emptySpace();
+			if (preBoxMove && c != 0) {
+				board[r][c] = Box();
+				board[r][c - 1] = emptySpace();
 				push--;
 			}
-			user.setLocation(p.first, p.second + 1);
+			user.setLocation(r, c + 1);
 		}
 		else if (preMove == 'd') {
-			if (preBoxMove && p.second != 9) {
-				board[p.first][p.second] = Box();
-				board[p.first][p.second + 1] = emptySpace();
+			if (preBoxMove && c != 9) {
+				board[r][c] = Box();
+				board[r][c + 1] = emptySpace();
 				push--;
 			}
-			user.setLocation(p.first, p.second - 1);
+			user.setLocation(r, c - 1);
 		}
 		else return false;
 		step--;
@@ -333,6 +336,10 @@ public:
 
 	map getMap() {
 		return Map;
+	}
+
+	void getL(int l[]) {
+		Map.getUser().getLocation(l);
 	}
 
 	pair<int, int> getL() {
@@ -416,9 +423,9 @@ public:
 			if (board[r][c].getType() == 'b') continue;
 			mvwprintw(win_game, r + 1, c + 1, "T");
 		}
-		pair<int, int> player = game->getL();
+		int player[2] = game->getL(player);
 		wattron(win_game, COLOR_PAIR(CHARACTER));
-		mvwprintw(win_game, player.first + 1, player.second + 1, "C");
+		mvwprintw(win_game, player[0] + 1, player[1] + 1, "C");
 		wrefresh(win_game);
 	}
 
