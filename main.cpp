@@ -140,6 +140,7 @@ class map {
 	int step, push, currlevel;
 	int target[13];
 	char preMove;
+	bool preBoxMove;
 
 public:
 	map() {
@@ -185,6 +186,7 @@ public:
 			if (board[l.first - 1][l.second].getType() == 'e') {
 				user.setLocation(l.first - 1, l.second);
 				preMove = 'w';
+				preBoxMove = false;
 			}
 			else if (board[l.first - 1][l.second].getType() == 'b') {
 				if (l.first == 1) return false;
@@ -193,6 +195,7 @@ public:
 					board[l.first - 2][l.second] = Box();
 					board[l.first - 1][l.second] = emptySpace();
 					preMove = 'w';
+					preBoxMove = true;
 					push++;
 				}
 			}
@@ -205,6 +208,7 @@ public:
 			if (board[l.first + 1][l.second].getType() == 'e') {
 				user.setLocation(l.first + 1, l.second);
 				preMove = 's';
+				preBoxMove = false;
 			}
 			else if (board[l.first + 1][l.second].getType() == 'b') {
 				if (l.first + 1 == 9) return false;
@@ -213,6 +217,7 @@ public:
 					board[l.first + 1][l.second] = emptySpace();
 					board[l.first + 2][l.second] = Box();
 					preMove = 's';
+					preBoxMove = true;
 					push++;
 				}
 			}
@@ -225,6 +230,7 @@ public:
 			if (board[l.first][l.second - 1].getType() == 'e') {
 				user.setLocation(l.first, l.second - 1);
 				preMove = 'a';
+				preBoxMove = false;
 			}
 			else if (board[l.first][l.second - 1].getType() == 'b') {
 				if (l.second == 1) return false;
@@ -233,6 +239,7 @@ public:
 					board[l.first][l.second - 2] = Box();
 					board[l.first][l.second - 1] = emptySpace();
 					preMove = 'a';
+					preBoxMove = true;
 					push++;
 				}
 			}
@@ -245,6 +252,7 @@ public:
 			if (board[l.first][l.second + 1].getType() == 'e') {
 				user.setLocation(l.first, l.second + 1);
 				preMove = 'd';
+				preBoxMove = false;
 			}
 			else if (board[l.first][l.second + 1].getType() == 'b') {
 				if (l.second == 8) return false;
@@ -253,6 +261,7 @@ public:
 					board[l.first][l.second + 2] = Box();
 					board[l.first][l.second + 1] = emptySpace();
 					preMove = 'd';
+					preBoxMove = true;
 					push++;
 				}
 			}
@@ -270,54 +279,42 @@ public:
 	bool revert() {
 		pair<int, int> p = user.getLocation();
 		if (preMove == 'w') {
-			if (p.first == 0) {}
-			else if (board[p.first - 1][p.second].getType() == 'b') {
+			if (preBoxMove && p.first != 0) {
 				board[p.first][p.second] = Box();
 				board[p.first - 1][p.second] = emptySpace();
 				push--;
 			}
 			user.setLocation(p.first + 1, p.second);
-			step--;
-			preMove = ' ';
-			return true;
 		}
 		else if (preMove == 's') {
-			if (p.first == 9) {}
-			else if (board[p.first + 1][p.second].getType() == 'b') {
+			if (preBoxMove && p.first != 9) {
 				board[p.first][p.second] = Box();
-				board[p.first - 1][p.second] = emptySpace();
+				board[p.first + 1][p.second] = emptySpace();
 				push--;
 			}
 			user.setLocation(p.first - 1, p.second);
-			step--;
-			preMove = ' ';
-			return true;
 		}
 		else if (preMove == 'a') {
-			if (p.second == 0) {}
-			else if (board[p.first][p.second - 1].getType() == 'b') {
+			if (preBoxMove && p.second != 0) {
 				board[p.first][p.second] = Box();
 				board[p.first][p.second - 1] = emptySpace();
 				push--;
 			}
 			user.setLocation(p.first, p.second + 1);
-			step--;
-			preMove = ' ';
-			return true;
 		}
 		else if (preMove == 'd') {
-			if (p.second == 9) {}
-			else if (board[p.first][p.second + 1].getType() == 'b') {
+			if (preBoxMove && p.second != 9) {
 				board[p.first][p.second] = Box();
 				board[p.first][p.second + 1] = emptySpace();
 				push--;
 			}
 			user.setLocation(p.first, p.second - 1);
-			step--;
-			preMove = ' ';
-			return true;
 		}
-		return false;
+		else return false;
+		step--;
+		preMove = ' ';
+		preBoxMove = false;
+		return true;
 	}
 
 	bool check() {
@@ -341,7 +338,8 @@ public:
 	}
 
 	void order(char order) {
-		if (order == 'R') Map.revert();
+		if (order == 'b') Map.revert();
+		else if (order == 'r') Map.reset();
 		else {
 			if (Map.move(order)) {
 				if (Map.check()) {
