@@ -40,8 +40,8 @@ public:
 		{4, 1, 3, 0, 0, 0, 0, 0, 1, 4},
 		{4, 1, 0, 3, 2, 2, 2, 0, 1, 4},
 		{4, 1, 3, 0, 0, 0, 0, 0, 1, 4},
-		{4, 1, 1, 1, 1, 1, 0, 0, 1, 4},
-		{4, 4, 4, 4, 4, 1, 0, 0, 1, 4},
+		{4, 1, 1, 1, 1, 1, 1, 1, 1, 4},
+		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
 	},
 	{
 		{4, 4, 4, 4, 4, 4, 4, 4, 4, 4},
@@ -70,7 +70,7 @@ public:
 	};
 
 	int characterList[11][2] = {
-		{8, 4}, {3, 4}, {6, 7}, {8, 5}
+		{8, 4}, {8, 4}, {7, 5}, {8, 5}, {8, 7}
 	};
 
 	int returnObj(int level, int i, int j) const {
@@ -180,104 +180,77 @@ public:
 				else board[i][j] = nothing();
 			}
 		}
-		int* rc = itemList.returnCharacter(0);
+		int* rc = itemList.returnCharacter(currlevel);
 		user.setLocation(rc[0], rc[1]);
 		step = 0;
 		push = 0;
 	}
 
+	void swap(element &e1, element &e2) {
+		element temp = e1;
+		e1 = e2;
+		e2 = temp;
+	}
+
 	bool move(char order) {
 		pair<int, int> l;
 		l = user.getLocation();
-		if (order == 'w') {
-			if (l.first == 0) return false;
-			if (board[l.first - 1][l.second].getType() == 'e') {
-				user.setLocation(l.first - 1, l.second);
-				preMove = 'w';
-				preBoxMove = false;
-			}
-			else if (board[l.first - 1][l.second].getType() == 'b') {
-				if (l.first == 1) return false;
+		if (order == 'w' && l.first != 0) {
+			if (board[l.first - 1][l.second].getType() == 'e') preBoxMove = false;
+			else if (board[l.first - 1][l.second].getType() == 'b' && l.first != 1) {
 				if (board[l.first - 2][l.second].getType() == 'e') {
-					user.setLocation(l.first - 1, l.second);
-					board[l.first - 2][l.second] = Box();
-					board[l.first - 1][l.second] = emptySpace();
-					preMove = 'w';
+					swap(board[l.first - 2][l.second], board[l.first - 1][l.second]);
 					preBoxMove = true;
 					push++;
 				}
+				else return false;
 			}
 			else return false;
-			step++;
-			return true;
+			user.setLocation(l.first - 1, l.second);
 		}
-		else if (order == 's') {
-			if (l.first == 9) return false;
-			if (board[l.first + 1][l.second].getType() == 'e') {
-				user.setLocation(l.first + 1, l.second);
-				preMove = 's';
-				preBoxMove = false;
-			}
-			else if (board[l.first + 1][l.second].getType() == 'b') {
-				if (l.first + 1 == 9) return false;
+		else if (order == 's' && l.first != 9) {
+			if (board[l.first + 1][l.second].getType() == 'e') preBoxMove = false;
+			else if (board[l.first + 1][l.second].getType() == 'b' && l.first !=  8) {
 				if (board[l.first + 2][l.second].getType() == 'e') {
-					user.setLocation(l.first + 1, l.second);
-					board[l.first + 1][l.second] = emptySpace();
-					board[l.first + 2][l.second] = Box();
-					preMove = 's';
+					swap(board[l.first + 1][l.second], board[l.first + 2][l.second]);
 					preBoxMove = true;
 					push++;
 				}
+				else return false;
 			}
 			else return false;
-			step++;
-			return true;
+			user.setLocation(l.first + 1, l.second);
 		}
-		else if (order == 'a') {
-			if (l.second == 0) return false;
-			if (board[l.first][l.second - 1].getType() == 'e') {
-				user.setLocation(l.first, l.second - 1);
-				preMove = 'a';
-				preBoxMove = false;
-			}
-			else if (board[l.first][l.second - 1].getType() == 'b') {
-				if (l.second == 1) return false;
+		else if (order == 'a' && l.second != 0) {
+			if (board[l.first][l.second - 1].getType() == 'e') preBoxMove = false;
+			else if (board[l.first][l.second - 1].getType() == 'b' && l.second != 1) {
 				if (board[l.first][l.second - 2].getType() == 'e') {
-					user.setLocation(l.first, l.second - 1);
-					board[l.first][l.second - 2] = Box();
-					board[l.first][l.second - 1] = emptySpace();
-					preMove = 'a';
+					swap(board[l.first][l.second - 2], board[l.first][l.second - 1]);
 					preBoxMove = true;
 					push++;
 				}
+				else return false;
 			}
 			else return false;
-			step++;
-			return true;
+			user.setLocation(l.first, l.second - 1);
 		}
-		else if (order == 'd') {
-			if (l.second == 9) return false;
-			if (board[l.first][l.second + 1].getType() == 'e') {
-				user.setLocation(l.first, l.second + 1);
-				preMove = 'd';
-				preBoxMove = false;
-			}
-			else if (board[l.first][l.second + 1].getType() == 'b') {
-				if (l.second == 8) return false;
+		else if (order == 'd' && l.second != 9) {
+			if (board[l.first][l.second + 1].getType() == 'e') preBoxMove = false;
+			else if (board[l.first][l.second + 1].getType() == 'b' && l.second != 8) {
 				if (board[l.first][l.second + 2].getType() == 'e') {
-					user.setLocation(l.first, l.second + 1);
-					board[l.first][l.second + 2] = Box();
-					board[l.first][l.second + 1] = emptySpace();
-					preMove = 'd';
+					swap(board[l.first][l.second + 2], board[l.first][l.second + 1]);
 					preBoxMove = true;
 					push++;
 				}
+				else return false;
 			}
 			else return false;
-			step++;
-			return true;
+			user.setLocation(l.first, l.second + 1);
 		}
-		return false;
+		else return false;
+		preMove = order;
+		step++;
+		return true;
 	}
 
 	void reset() {
@@ -351,6 +324,7 @@ public:
 		else {
 			if (Map.move(order)) {
 				if (Map.check()) {
+					if(Map.getCurrLevel() == 4) Map.start(0);
 					Map.start(Map.getCurrLevel() + 1);
 				}
 			}
