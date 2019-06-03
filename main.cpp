@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <vector>
 #include <ncurses.h>
 using namespace std;
@@ -28,7 +28,7 @@ public:
 		{4, 4, 1, 1, 2, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 0, 2, 0, 0, 1, 4},
 		{4, 4, 4, 1, 0, 0, 0, 0, 1, 4},
-		{1, 4, 4, 4, 0, 0, 1, 1, 1, 4},
+		{4, 4, 4, 1, 0, 0, 1, 1, 1, 4},
 		{4, 4, 4, 1, 1, 1, 1, 4, 4, 4},
 	},
 	{
@@ -152,6 +152,14 @@ public:
 	int getPush() const { return push; }
 	character getUser() { return user; }
 	element(*getBoard())[11]{ return board; }
+	void getTarget(int *ptr) {
+		int n = target[0];
+		ptr[0] = target[0];
+		for (int i=1;i<2*n+1;i+=2) {
+			ptr[i] = target[i];
+			ptr[i+1] = target[i+1];
+		}
+	}
 
 	void start(int level = 0) {
 		currlevel = level;
@@ -401,8 +409,8 @@ public:
 
 		// Text
 		mvprintw(1, 3, "Push Box Game!");
-		mvprintw(16, 3, "U    Q - quit");
-		mvprintw(17, 2, "LDR   R - reset(?)");
+		mvprintw(16, 1, "  W    Q - quit   B - Back");
+		mvprintw(17, 1, " Asd   R - reset(?)");
 		mvprintw(18, 2, "move");
 		mvwprintw(win_game, 1, 1, "win_game");
 		mvwprintw(win_sub, 1, 1, "win_sub\n Score~~~");
@@ -424,6 +432,15 @@ public:
 				else wattron(win_game, COLOR_PAIR(DEFAULT));
 				mvwprintw(win_game, i + 1, j + 1, "%c", type);
 			}
+		}
+		int target[13];
+		game->getMap().getTarget(target);
+		wattron(win_game, COLOR_PAIR(TARGET));
+		for (int i=0;i<target[0];++i) {
+			int r = target[i*2+1];
+			int c = target[i*2+2];
+			if (board[r][c].getType() == 'b') continue;
+			mvwprintw(win_game, r + 1, c + 1, "T");
 		}
 		pair<int, int> player = game->getL();
 		wattron(win_game, COLOR_PAIR(CHARACTER));
