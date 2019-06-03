@@ -207,7 +207,7 @@ public:
 				else return false;
 			}
 			else return false;
-			user.setLocation(r - 1, c);
+			r--;
 		}
 		else if (order == 's' && r != 9) {
 			if (board[r + 1][c].getType() == 'e') preBoxMove = false;
@@ -220,7 +220,7 @@ public:
 				else return false;
 			}
 			else return false;
-			user.setLocation(r + 1, c);
+			r++;
 		}
 		else if (order == 'a' && c != 0) {
 			if (board[r][c - 1].getType() == 'e') preBoxMove = false;
@@ -233,7 +233,7 @@ public:
 				else return false;
 			}
 			else return false;
-			user.setLocation(r, c - 1);
+			c--;
 		}
 		else if (order == 'd' && c != 9) {
 			if (board[r][c + 1].getType() == 'e') preBoxMove = false;
@@ -246,9 +246,10 @@ public:
 				else return false;
 			}
 			else return false;
-			user.setLocation(r, c + 1);
+			c++;
 		}
 		else return false;
+		user.setLocation(r, c);
 		preMove = order;
 		step++;
 		return true;
@@ -263,38 +264,25 @@ public:
 		user.getLocation(l);
 		int r = l[0], c = l[1];
 		if (preMove == 'w') {
-			if (preBoxMove && r != 0) {
-				board[r][c] = Box();
-				board[r - 1][c] = emptySpace();
-				push--;
-			}
-			user.setLocation(r + 1, c);
+			if (preBoxMove && r != 0) swap(board[r][c], board[r - 1][c]);
+			r++;
 		}
 		else if (preMove == 's') {
-			if (preBoxMove && r != 9) {
-				board[r][c] = Box();
-				board[r + 1][c] = emptySpace();
-				push--;
-			}
-			user.setLocation(r - 1, c);
+			if (preBoxMove && r != 9) swap(board[r][c], board[r + 1][c]);
+			r--;
 		}
 		else if (preMove == 'a') {
-			if (preBoxMove && c != 0) {
-				board[r][c] = Box();
-				board[r][c - 1] = emptySpace();
-				push--;
-			}
-			user.setLocation(r, c + 1);
+			if (preBoxMove && c != 0) swap(board[r][c], board[r][c - 1]);
+			c++;
 		}
 		else if (preMove == 'd') {
-			if (preBoxMove && c != 9) {
-				board[r][c] = Box();
-				board[r][c + 1] = emptySpace();
-				push--;
-			}
-			user.setLocation(r, c - 1);
+			if (preBoxMove && c != 9) swap(board[r][c], board[r][c + 1]);
+			c--;
 		}
 		else return false;
+
+		user.setLocation(r, c); // 이전 자리
+		if(preBoxMove) push--;
 		step--;
 		preMove = ' ';
 		preBoxMove = false;
@@ -303,8 +291,7 @@ public:
 
 	bool check() {
 		int * temp = target;
-		int n = temp[0];
-		for (int i = 1; i < n * 2 + 1; i += 2) {
+		for (int i = 1; i < temp[0] * 2 + 1; i += 2) {
 			if (board[temp[i]][temp[i + 1]].getType() != 'b') return false;
 		}
 		return true;
@@ -339,11 +326,10 @@ public:
 	}
 
 	void getL(int l[]) {
-		Map.getUser().getLocation(l);
-	}
-
-	pair<int, int> getL() {
-		return Map.getUser().getLocation();
+		int arr[2];
+		Map.getUser().getLocation(arr);
+		l[0] = arr[0];
+		l[1] = arr[1];
 	}
 
 };
@@ -423,7 +409,8 @@ public:
 			if (board[r][c].getType() == 'b') continue;
 			mvwprintw(win_game, r + 1, c + 1, "T");
 		}
-		int player[2] = game->getL(player);
+		int player[2];
+		game->getL(player);
 		wattron(win_game, COLOR_PAIR(CHARACTER));
 		mvwprintw(win_game, player[0] + 1, player[1] + 1, "C");
 		wrefresh(win_game);
