@@ -16,6 +16,10 @@ void map::getTarget(int *ptr) {
 	}
 }
 
+map::map() {
+	start(0);
+}
+
 void map::start(int level) {
 	currlevel = level;
 	target[0] = 0; int n = 1;
