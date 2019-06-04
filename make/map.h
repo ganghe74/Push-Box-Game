@@ -1,7 +1,7 @@
-#pragma once
 #ifndef MAP_H
 #define MAP_H
 #include "elements.h"
+#include <iostream>
 
 class map {
 	character user;

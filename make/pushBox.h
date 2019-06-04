@@ -1,7 +1,7 @@
-#pragma once
 #ifndef PUSHBOX_H
 #define PUSHBOX_H
 #include "map.h"
+#include <iostream>
 
 class pushBox {
 private:
