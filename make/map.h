@@ -2,6 +2,8 @@
 #define MAP_H
 #include "elements.h"
 #include <iostream>
+#include <stack>
+using namespace std;
 
 class map {
 	character user;
@@ -9,8 +11,10 @@ class map {
 	items itemList;
 	int step, push, currlevel;
 	int target[13];
-	char preMove;
-	bool preBoxMove;
+	/*char preMove;
+	bool preBoxMove;*/
+	stack<char> preMove;
+	stack<bool> preBoxMove;
 
 public:
 	map();
