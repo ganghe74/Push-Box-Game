@@ -20,19 +20,19 @@ void UI::init() {
 	// Initialize colors  // init_pair(num, text color, bkgd color);
 	start_color();
 	init_pair(DEFAULT, COLOR_WHITE, COLOR_BLACK);
-	init_pair(CHARACTER, COLOR_WHITE, COLOR_RED);
-	init_pair(BOX, COLOR_WHITE, COLOR_YELLOW);
+	init_pair(CHARACTER, COLOR_RED, COLOR_RED);
+	init_pair(BOX, COLOR_YELLOW, COLOR_YELLOW);
 	init_pair(WALL, COLOR_WHITE, COLOR_WHITE);
 	init_pair(EMPTY, COLOR_BLACK, COLOR_BLACK);
 	init_pair(NOTHING, COLOR_BLACK, COLOR_BLACK);
-	init_pair(TARGET, COLOR_WHITE, COLOR_GREEN);
+	init_pair(TARGET, COLOR_GREEN, COLOR_GREEN);
 
 	// Initialize windows
-	resize_term(20, 30);
+	resize_term(20, 35);
 	border('*', '*', '*', '*', '*', '*', '*', '*');
 	win_game = newwin(12, 12, 3, 3);
 	wborder(win_game, '@', '@', '@', '@', '@', '@', '@', '@');
-	win_sub = newwin(10, 10, 3, 17);
+	win_sub = newwin(10, 12, 3, 17);
 
 	wborder(win_sub, '@', '@', '@', '@', '@', '@', '@', '@');
 		// Text
@@ -41,7 +41,6 @@ void UI::init() {
 	mvprintw(17, 1, " Asd   R - reset(?)");
 	mvprintw(18, 2, "move");
 	mvwprintw(win_game, 1, 1, "win_game");
-	mvwprintw(win_sub, 1, 1, "win_sub\n Score~~~");
 	refresh();
 	wrefresh(win_game);
 	wrefresh(win_sub);
@@ -74,6 +73,10 @@ void UI::update_scr() {
 	wattron(win_game, COLOR_PAIR(CHARACTER));
 	mvwprintw(win_game, player[0] + 1, player[1] + 1, "C");
 	wrefresh(win_game);
+
+	mvwprintw(win_sub, 1, 1, "Step : %03d", game->getMap().getStep());
+	mvwprintw(win_sub, 2, 1, "Push : %03d", game->getMap().getPush());
+	wrefresh(win_sub);
 }
 
 // Game Start!
