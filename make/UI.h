@@ -4,7 +4,7 @@
 #include <ncurses.h>
 using namespace std;
 
-enum palette { DEFAULT, CHARACTER, BOX, WALL, EMPTY, NOTHING, TARGET };
+enum palette { DEFAULT, CHARACTER, BOX = 'b', WALL = 'w', EMPTY = 'e', NOTHING = 'n', TARGET };
 
 class UI {
 public:

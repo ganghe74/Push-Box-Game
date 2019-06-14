@@ -8,12 +8,12 @@ UI::~UI() {
 	delwin(win_game);
 	delwin(win_sub);
 	endwin();
-	cout << "Finished\n";
-	cout << "Score : ~~~\n";
+	cout << "Game Finished\n";
 }
 void UI::init() {
 	// Initialize ncurses
 	initscr();
+	keypad(stdscr, TRUE);
 	curs_set(0);
 	noecho();
 
@@ -32,14 +32,14 @@ void UI::init() {
 	border('|', '|', '-', '-', '+', '+', '+', '+');
 	win_game = newwin(12, 12, 3, 3);
 	wborder(win_game, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
-	win_sub = newwin(10, 12, 3, 17);
+	win_sub = newwin(4, 12, 3, 19);
 
 	wborder(win_sub, '|', '|', '-', '-', '+', '+', '+', '+');
 		// Text
 	mvprintw(1, 3, "Push Box Game!");
-	mvprintw(16, 1, "Q - quit   B - Back");
-	mvprintw(17, 1, "R - reset");
-	mvprintw(18, 1, "Errows - move");
+	mvprintw(16, 1, "Q - Quit   B - Back");
+	mvprintw(17, 1, "R - Reset");
+	mvprintw(18, 1, "Arrows - move");
 	mvwprintw(win_game, 1, 1, "win_game");
 	refresh();
 	wrefresh(win_game);
@@ -51,11 +51,7 @@ void UI::update_scr() {
 	for (int i = 0; i < 10; ++i) {
 		for (int j = 0; j < 10; ++j) {
 			char type = board[i][j].getType();
-			if (type == 'b') wattron(win_game, COLOR_PAIR(BOX));
-			else if (type == 'w') wattron(win_game, COLOR_PAIR(WALL));
-			else if (type == 'e') wattron(win_game, COLOR_PAIR(EMPTY));
-			else if (type == 'n') wattron(win_game, COLOR_PAIR(NOTHING));
-			else wattron(win_game, COLOR_PAIR(DEFAULT));
+			wattron(win_game, COLOR_PAIR(type));
 			mvwprintw(win_game, i + 1, j + 1, "%c", type);
 		}
 	}
@@ -74,24 +70,21 @@ void UI::update_scr() {
 	mvwprintw(win_game, player[0] + 1, player[1] + 1, "C");
 	wrefresh(win_game);
 
-	mvwprintw(win_sub, 1, 1, "Step : %03d", game->getMap().getStep());
-	mvwprintw(win_sub, 2, 1, "Push : %03d", game->getMap().getPush());
+	mvwprintw(win_sub, 1, 1, "Step : %-3d", game->getMap().getStep());
+	mvwprintw(win_sub, 2, 1, "Push : %-3d", game->getMap().getPush());
 	wrefresh(win_sub);
 }
 
 // Game Start!
 void UI::start(pushBox *game) {
-	keypad(stdscr, TRUE);
 	this->game = game;
 	while (true) {
 		update_scr();
 		int key = getch();
+		if (isupper(key)) key = tolower(key);
+		if (258 <= key && key <= 261) { key = "swad"[key - 258]; }
 		if (key == 'q') break;
-		if (key == KEY_UP) game->order('W');
-		else if (key == KEY_DOWN) game->order('S');
-		else if (key == KEY_LEFT) game->order('A');
-		else if (key == KEY_RIGHT) game->order('D');
-		else game->order(key);
+		game->order(key);
 	}
 	this->game = NULL;
 }
