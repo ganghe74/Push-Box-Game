@@ -43,6 +43,8 @@ void map::start(int level) {
 	user.setLocation(rc[0], rc[1]);
 	step = 0;
 	push = 0;
+	while(!preMove.empty()) preMove.pop();
+	while(!preBoxMove.empty()) preBoxMove.pop();
 }
 
 void map::swap(element &e1, element &e2) {

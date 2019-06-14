@@ -39,7 +39,7 @@ void UI::init() {
 	mvprintw(1, 3, "Push Box Game!");
 	mvprintw(16, 1, "Q - quit   B - Back");
 	mvprintw(17, 1, "R - reset");
-	mvprintw(18, 1, "WASD - move(up/left/down/right)");
+	mvprintw(18, 1, "Errows - move");
 	mvwprintw(win_game, 1, 1, "win_game");
 	refresh();
 	wrefresh(win_game);
@@ -81,12 +81,17 @@ void UI::update_scr() {
 
 // Game Start!
 void UI::start(pushBox *game) {
+	keypad(stdscr, TRUE);
 	this->game = game;
 	while (true) {
 		update_scr();
-		char key = getch();
+		int key = getch();
 		if (key == 'q') break;
-		game->order(key);
+		if (key == KEY_UP) game->order('w');
+		else if (key == KEY_DOWN) game->order('s');
+		else if (key == KEY_LEFT) game->order('a');
+		else if (key == KEY_RIGHT) game->order('d');
+		else game->order(key);
 	}
 	this->game = NULL;
 }
