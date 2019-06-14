@@ -87,10 +87,10 @@ void UI::start(pushBox *game) {
 		update_scr();
 		int key = getch();
 		if (key == 'q') break;
-		if (key == KEY_UP) game->order('w');
-		else if (key == KEY_DOWN) game->order('s');
-		else if (key == KEY_LEFT) game->order('a');
-		else if (key == KEY_RIGHT) game->order('d');
+		if (key == KEY_UP) game->order('W');
+		else if (key == KEY_DOWN) game->order('S');
+		else if (key == KEY_LEFT) game->order('A');
+		else if (key == KEY_RIGHT) game->order('D');
 		else game->order(key);
 	}
 	this->game = NULL;

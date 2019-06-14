@@ -57,7 +57,7 @@ bool map::move(char order) {
 	int l[2];
 	user.getLocation(l);
 	int r = l[0], c = l[1];
-	if (order == 'w' && r != 0) {
+	if (order == 'W' && r != 0) {
 		if (board[r - 1][c].getType() == 'e') preBoxMove.push(false);
 		else if (board[r - 1][c].getType() == 'b' && r != 1) {
 			if (board[r - 2][c].getType() == 'e') {
@@ -71,7 +71,7 @@ bool map::move(char order) {
 		else return false;
 		user.setLocation(r - 1, c);
 	}
-	else if (order == 's' && r != 9) {
+	else if (order == 'S' && r != 9) {
 		if (board[r + 1][c].getType() == 'e') preBoxMove.push(false);
 		else if (board[r + 1][c].getType() == 'b' && r != 8) {
 			if (board[r + 2][c].getType() == 'e') {
@@ -85,7 +85,7 @@ bool map::move(char order) {
 		else return false;
 		user.setLocation(r + 1, c);
 	}
-	else if (order == 'a' && c != 0) {
+	else if (order == 'A' && c != 0) {
 		if (board[r][c - 1].getType() == 'e') preBoxMove.push(false);
 		else if (board[r][c - 1].getType() == 'b' && c != 1) {
 			if (board[r][c - 2].getType() == 'e') {
@@ -99,7 +99,7 @@ bool map::move(char order) {
 		else return false;
 		user.setLocation(r, c - 1);
 	}
-	else if (order == 'd' && c != 9) {
+	else if (order == 'D' && c != 9) {
 		if (board[r][c + 1].getType() == 'e') preBoxMove.push(false);
 		else if (board[r][c + 1].getType() == 'b' && c != 8) {
 			if (board[r][c + 2].getType() == 'e') {
