@@ -1,10 +1,10 @@
-#pragma once
 #ifndef UI_H
 #define UI_H
 #include "pushBox.h"
 #include <ncurses.h>
+using namespace std;
 
-enum palette { DEFAULT, CHARACTER, BOX, WALL, EMPTY, NOTHING, TARGET };
+enum palette { DEFAULT, CHARACTER, BOX = 'b', WALL = 'w', EMPTY = 'e', NOTHING = 'n', TARGET };
 
 class UI {
 public:
