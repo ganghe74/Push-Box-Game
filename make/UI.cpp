@@ -29,17 +29,17 @@ void UI::init() {
 
 	// Initialize windows
 	resize_term(20, 35);
-	border('*', '*', '*', '*', '*', '*', '*', '*');
+	border('|', '|', '-', '-', '+', '+', '+', '+');
 	win_game = newwin(12, 12, 3, 3);
-	wborder(win_game, '@', '@', '@', '@', '@', '@', '@', '@');
+	wborder(win_game, ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ');
 	win_sub = newwin(10, 12, 3, 17);
 
-	wborder(win_sub, '@', '@', '@', '@', '@', '@', '@', '@');
+	wborder(win_sub, '|', '|', '-', '-', '+', '+', '+', '+');
 		// Text
 	mvprintw(1, 3, "Push Box Game!");
-	mvprintw(16, 1, "  W    Q - quit   B - Back");
-	mvprintw(17, 1, " Asd   R - reset(?)");
-	mvprintw(18, 2, "move");
+	mvprintw(16, 1, "Q - quit   B - Back");
+	mvprintw(17, 1, "R - reset");
+	mvprintw(18, 1, "WASD - move(up/left/down/right)");
 	mvwprintw(win_game, 1, 1, "win_game");
 	refresh();
 	wrefresh(win_game);
